@@ -28,10 +28,11 @@ def restaurant_similarity(G, rest1, rest2):
     total = list(filter(lambda x: G.nodes[x]['type'] == 'category', total))
     return len(shared_nodes) / len(total)
 
+
+
 def category_preference_list(G, user):
     ratings = {}
-    for r in G.neighbors(user): 
-        #print("*", G.nodes[user]['name'], "-", G.nodes[r]['name'], "-",  G.get_edge_data(test_user, r))
+    for r in G.neighbors(user):
         for c in G.neighbors(r): 
             if G.nodes[c]['type'] == 'category':
                 if c in ratings:
@@ -53,11 +54,11 @@ def most_similar_users(G, user):
                 similar_users[c] = category_preference_list(G, c)
     
     similarities = defaultdict(list)
-    for user, preferences in similar_users:
-        similarity = user_similarity(category_ratings, preferences)
-        similarities[similarity].append(user)
+    for u, v in similar_users.items():
+        similarity = user_similarity(category_ratings, v)
+        similarities[similarity].append(u)
 
-    max_similarity = max(similarities.keys(), 0)
+    max_similarity = max(similarities.keys())
     if(max_similarity == 0): return []
 
     return similarities[max_similarity]
