@@ -20,7 +20,7 @@ parser.add_argument('--lr', type=float, default=2e-2, help='learning rate')
 parser.add_argument('--ratio', type=float, default=1, help='size of training dataset')
 
 show_loss = False
-show_time = False
+show_time = True
 show_topk = False
 
 t = time()
