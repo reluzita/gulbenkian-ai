@@ -170,7 +170,6 @@ def accuracy_eval(sess, model, user_list, train_record, test_record, item_set, k
             print("label:", label, " prediction:", prediction)
             break
         """
-        
         for item, label in test_record[user]:
             prediction = item_score_map[item]
             rmse_list.append((label - prediction)**2)
