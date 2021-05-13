@@ -29,31 +29,25 @@ def train(args, data, show_loss, show_topk):
                     print(start, loss)
 
             # CTR evaluation
-            """
-            train_auc, train_f1 = ctr_eval(sess, model, train_data, args.batch_size)
-            eval_auc, eval_f1 = ctr_eval(sess, model, eval_data, args.batch_size)
-            test_auc, test_f1 = ctr_eval(sess, model, test_data, args.batch_size)
+            train_rmse = ctr_eval(sess, model, train_data, args.batch_size)
+            eval_rmse = 0#ctr_eval(sess, model, eval_data, args.batch_size)
+            test_rmse = ctr_eval(sess, model, test_data, args.batch_size)
 
-            print('epoch %d    train auc: %.4f  f1: %.4f    eval auc: %.4f  f1: %.4f    test auc: %.4f  f1: %.4f'
-                  % (step, train_auc, train_f1, eval_auc, eval_f1, test_auc, test_f1))
+            print('epoch %d    train rmse: %.4f    eval rmse: %.4f    test rmse: %.4f'
+                  % (step, train_rmse, eval_rmse, test_rmse))
 
             # top-K evaluation
-            
+            """
             if show_topk:
-                precision, recall = topk_eval(
+                rmse = topk_eval(
                     sess, model, user_list, train_record, test_record, item_set, k_list, args.batch_size)
-                print('precision: ', end='')
-                for i in precision:
-                    print('%.4f\t' % i, end='')
-                print()
-                print('recall: ', end='')
-                for i in recall:
+                print('rmse: ', end='')
+                for i in rmse:
                     print('%.4f\t' % i, end='')
                 print('\n')
             """
-            print("epoch ", step)
-            accuracy = accuracy_eval(sess, model, user_list, train_record, test_record, item_set, k_list, args.batch_size)
-            print("accuracy: ", accuracy)
+            
+           
 
 
 def topk_settings2(show_topk, train_data, test_data, n_item):
@@ -94,19 +88,16 @@ def get_feed_dict(model, data, start, end):
 
 def ctr_eval(sess, model, data, batch_size):
     start = 0
-    auc_list = []
-    f1_list = []
+    rmse_list = []
     while start + batch_size <= data.shape[0]:
-        auc, f1 = model.eval(sess, get_feed_dict(model, data, start, start + batch_size))
-        auc_list.append(auc)
-        f1_list.append(f1)
+        rmse = model.eval(sess, get_feed_dict(model, data, start, start + batch_size))
+        rmse_list.append(rmse)
         start += batch_size
-    return float(np.mean(auc_list)), float(np.mean(f1_list))
+    return float(np.mean(rmse_list))
 
 
 def topk_eval(sess, model, user_list, train_record, test_record, item_set, k_list, batch_size):
-    precision_list = {k: [] for k in k_list}
-    recall_list = {k: [] for k in k_list}
+    rmse_list = {k: [] for k in k_list}
 
     for user in user_list:
         test_item_list = list(item_set - train_record[user])

@@ -1,6 +1,6 @@
 import tensorflow as tf
 from aggregators import SumAggregator, ConcatAggregator, NeighborAggregator
-from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.metrics import mean_squared_error
 
 class KGCN(object):
     def __init__(self, args, n_user, n_entity, n_relation, adj_entity, adj_relation):
@@ -100,9 +100,6 @@ class KGCN(object):
         return res, aggregators
 
     def _build_train(self):
-        #self.base_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(
-        #    labels=self.labels, logits=self.scores_normalized))
-
         self.base_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(
             self.labels, self.scores_normalized))
 
@@ -119,11 +116,8 @@ class KGCN(object):
 
     def eval(self, sess, feed_dict):
         labels, scores = sess.run([self.labels, self.scores_normalized], feed_dict)
-        auc = roc_auc_score(y_true=labels, y_score=scores)
-        scores[scores >= 0.5] = 1
-        scores[scores < 0.5] = 0
-        f1 = f1_score(y_true=labels, y_pred=scores)
-        return auc, f1
+        rmse = mean_squared_error(y_true=labels, y_pred=scores, squared=False)
+        return rmse
 
     def get_scores(self, sess, feed_dict):
         return sess.run([self.item_indices, self.scores_normalized], feed_dict)
