@@ -81,6 +81,7 @@ class SumAggregator(Aggregator):
         output = tf.reshape(output, [self.batch_size, -1, self.dim])
 
         return self.act(output)
+        #return tf.keras.activations.relu(output, max_value=5)
 
 
 class ConcatAggregator(Aggregator):

@@ -32,8 +32,9 @@ def dataset_split(rating_np, args):
     print('splitting dataset ...')
 
     # train:eval:test = 6:2:2
-    eval_ratio = 0.2
-    test_ratio = 0.2
+    #eval_ratio = 0.2
+    eval_ratio = 0
+    test_ratio = 0.3
     n_ratings = rating_np.shape[0]
 
     eval_indices = np.random.choice(list(range(n_ratings)), size=int(n_ratings * eval_ratio), replace=False)
