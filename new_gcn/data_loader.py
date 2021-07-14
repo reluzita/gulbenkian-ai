@@ -3,11 +3,11 @@ import os
 
 
 def load_data(args):
-    n_user, n_item, train_data, eval_data, test_data = load_rating(args)
+    n_user, train_data, eval_data, test_data, items, users = load_rating(args)
     n_entity, n_relation, adj_entity, adj_relation = load_kg(args)
     print('data loaded.')
 
-    return n_user, n_item, n_entity, n_relation, train_data, eval_data, test_data, adj_entity, adj_relation
+    return n_user, n_entity, n_relation, train_data, eval_data, test_data, adj_entity, adj_relation, items, users
 
 
 def load_rating(args):
@@ -21,20 +21,22 @@ def load_rating(args):
         rating_np = np.loadtxt(rating_file + '.txt', dtype=np.int64)
         np.save(rating_file + '.npy', rating_np)
 
-    n_user = len(set(rating_np[:, 0]))
-    n_item = len(set(rating_np[:, 1]))
+    users = set(rating_np[:, 0])
+    n_user = len(users)
+    items = set(rating_np[:, 1])
+    n_item = len(items)
     train_data, eval_data, test_data = dataset_split(rating_np, args)
 
-    return n_user, n_item, train_data, eval_data, test_data
+    return n_user, train_data, eval_data, test_data, items, users
 
 
 def dataset_split(rating_np, args):
     print('splitting dataset ...')
 
     # train:eval:test = 6:2:2
-    #eval_ratio = 0.2
-    eval_ratio = 0
-    test_ratio = 0.3
+    eval_ratio = 0.2
+    #eval_ratio = 0
+    test_ratio = 0.2
     n_ratings = rating_np.shape[0]
 
     eval_indices = np.random.choice(list(range(n_ratings)), size=int(n_ratings * eval_ratio), replace=False)

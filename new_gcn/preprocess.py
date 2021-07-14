@@ -106,8 +106,7 @@ if __name__ == '__main__':
     item_index_old2new = dict()
 
     read_item_index_to_entity_id_file()
-    #convert_rating()
-    #print(entity_id2index)
+    convert_rating()
     convert_kg()
 
     print('done')

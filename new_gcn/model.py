@@ -11,7 +11,7 @@ class KGCN(object):
 
     @staticmethod
     def get_initializer():
-        return tf.contrib.layers.xavier_initializer()
+        return tf.glorot_normal_initializer()
 
     def _parse_args(self, args, adj_entity, adj_relation):
         # [entity_num, neighbor_sample_size]
@@ -59,8 +59,8 @@ class KGCN(object):
 
         # [batch_size]
         self.scores = tf.reduce_sum(self.user_embeddings * self.item_embeddings, axis=1)
-        #self.scores_normalized = self.scores
         self.scores_normalized = tf.keras.activations.relu(self.scores, max_value=5)
+        #self.scores_normalized = tf.keras.activations.softmax(self.scores)
 
     def get_neighbors(self, seeds):
         seeds = tf.expand_dims(seeds, axis=1)
@@ -80,7 +80,7 @@ class KGCN(object):
 
         for i in range(self.n_iter):
             if i == self.n_iter - 1:
-                aggregator = self.aggregator_class(self.batch_size, self.dim, act=tf.nn.tanh)
+                aggregator = self.aggregator_class(self.batch_size, self.dim, act=tf.keras.activations.tanh, dropout=0.2)
             else:
                 aggregator = self.aggregator_class(self.batch_size, self.dim)
             aggregators.append(aggregator)
@@ -100,8 +100,11 @@ class KGCN(object):
         return res, aggregators
 
     def _build_train(self):
-        self.base_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(
+        self.base_loss = tf.reduce_mean(tf.losses.mean_squared_error(
             self.labels, self.scores_normalized))
+
+        #self.base_loss = tf.reduce_mean(tf.keras.losses.categorical_crossentropy(
+        #    self.labels, self.scores_normalized))
 
         self.l2_loss = tf.nn.l2_loss(self.user_emb_matrix) + tf.nn.l2_loss(
             self.entity_emb_matrix) + tf.nn.l2_loss(self.relation_emb_matrix)
@@ -109,7 +112,7 @@ class KGCN(object):
             self.l2_loss = self.l2_loss + tf.nn.l2_loss(aggregator.weights)
         self.loss = self.base_loss + self.l2_weight * self.l2_loss
 
-        self.optimizer = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.lr).minimize(self.loss)
 
     def train(self, sess, feed_dict):
         return sess.run([self.optimizer, self.loss], feed_dict)
@@ -118,6 +121,10 @@ class KGCN(object):
         labels, scores = sess.run([self.labels, self.scores_normalized], feed_dict)
         rmse = mean_squared_error(y_true=labels, y_pred=scores, squared=False)
         return rmse
+
+    def get_result(self, sess, feed_dict):
+        label, score = sess.run([self.labels, self.scores_normalized], feed_dict)
+        return label, score
 
     def get_scores(self, sess, feed_dict):
         return sess.run([self.item_indices, self.scores_normalized], feed_dict)
